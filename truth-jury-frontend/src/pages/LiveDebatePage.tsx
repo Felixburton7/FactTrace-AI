@@ -41,8 +41,8 @@ export default function LiveDebatePage() {
     const [apiAvailable, setApiAvailable] = useState<boolean | null>(null);
     const [hasStarted, setHasStarted] = useState(false);
 
-    // Get model from search params (defaults to gpt-4o-mini)
-    const model = searchParams.get('model') || 'gpt-4o-mini';
+    // Get model from search params (defaults to gpt-5.2)
+    const model = searchParams.get('model') || 'gpt-5.2';
 
     // Use the live debate hook
     const {

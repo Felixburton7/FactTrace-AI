@@ -10,6 +10,6 @@ except ImportError:  # pragma: no cover - optional dependency
 if load_dotenv is not None:
     load_dotenv()
 
-DEFAULT_OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4.1-mini")
+DEFAULT_OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-5.2")
 
 WORKSPACE_DIR = os.getenv("WORKSPACE_DIR", ".workspace")

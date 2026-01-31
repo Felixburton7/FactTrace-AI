@@ -73,7 +73,7 @@ class StartDebateRequest(BaseModel):
     """Request to start a new debate."""
     claim: str
     truth: str
-    model: str = "gpt-4o-mini"  # Default to cheaper model
+    model: str = "gpt-5.2"  # Default model for all agents
 
 
 class DebateStatusResponse(BaseModel):
