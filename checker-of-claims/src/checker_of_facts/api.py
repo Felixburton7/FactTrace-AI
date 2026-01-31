@@ -13,9 +13,10 @@ import json
 import os
 import uuid
 from contextlib import asynccontextmanager
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from datetime import datetime, timezone
 from typing import Any
+
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
@@ -30,7 +31,9 @@ from checker_of_facts.hackathon_models import (
     DebateTurn,
     ModeratorFinalVerdict,
     ModeratorSummary,
+    JurorReaction,
 )
+
 
 # Load environment variables
 load_dotenv()
@@ -95,7 +98,9 @@ class MessageEvent(BaseModel):
     turn_index: int | None = None
     is_moderator_summary: bool = False
     verdict: dict | None = None
+    reactions: list[dict] | None = None
     timestamp: str
+
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -208,6 +213,33 @@ class StreamingDebateEngine(HackathonDebateEngine):
                 "is_moderator_summary": False,
                 "timestamp": datetime.now(timezone.utc).isoformat(),
             })
+            
+            # Get reactions
+            turn_reactions = await self._get_reactions(turn, juror_ids)
+            turn = replace(turn, reactions=turn_reactions)
+            round1_turns[-1] = turn  # Update the turn in history
+            
+            formatted_reactions = [
+                {
+                    "jurorId": persona_id_to_frontend_id(r.juror_id),
+                    "jurorName": r.juror_name,
+                    "reaction": r.reaction,
+                    "reason": r.reason,
+                }
+                for r in turn_reactions
+            ]
+            
+            await self._emit_event({
+                "event_type": "reactions",
+                "persona_id": None,
+                "persona_name": None,
+                "content": "",
+                "round_number": 1,
+                "turn_index": turn_idx,
+                "is_moderator_summary": False,
+                "reactions": formatted_reactions,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            })
         
         from checker_of_facts.hackathon_models import DebateRound
         round1 = DebateRound(
@@ -266,6 +298,33 @@ class StreamingDebateEngine(HackathonDebateEngine):
                 "round_number": 2,
                 "turn_index": turn_idx,
                 "is_moderator_summary": False,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            })
+            
+            # Get reactions
+            turn_reactions = await self._get_reactions(turn, juror_ids)
+            turn = replace(turn, reactions=turn_reactions)
+            round2_turns[-1] = turn  # Update the turn in history
+            
+            formatted_reactions = [
+                {
+                    "jurorId": persona_id_to_frontend_id(r.juror_id),
+                    "jurorName": r.juror_name,
+                    "reaction": r.reaction,
+                    "reason": r.reason,
+                }
+                for r in turn_reactions
+            ]
+            
+            await self._emit_event({
+                "event_type": "reactions",
+                "persona_id": None,
+                "persona_name": None,
+                "content": "",
+                "round_number": 2,
+                "turn_index": turn_idx,
+                "is_moderator_summary": False,
+                "reactions": formatted_reactions,
                 "timestamp": datetime.now(timezone.utc).isoformat(),
             })
         

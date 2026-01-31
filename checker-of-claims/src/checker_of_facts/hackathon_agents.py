@@ -11,6 +11,7 @@ from typing import Any
 from checker_of_facts.config import DEFAULT_OPENAI_MODEL
 from checker_of_facts.hackathon_models import (
     DebateTurn,
+    JurorReaction,
     ModeratorFinalVerdict,
     ModeratorSummary,
     JurorPersona,
@@ -42,6 +43,7 @@ class AgentDefinition:
 class HackathonAgentRegistry:
     """Registry of agents for the hackathon debate system."""
     jurors: dict[str, AgentHandle]  # juror_id -> agent
+    reactors: dict[str, AgentHandle]  # juror_id -> reactor agent
     moderator: AgentHandle  # Single moderator for summary and guidance
     final_judge: AgentHandle  # Separate judge for final verdict
 
@@ -85,6 +87,31 @@ OUTPUT: One concise, impactful contribution (1-2 short paragraphs). Get to the p
             name=f"juror_{persona.id}",
             model=model,
             output_type=DebateTurn,
+            instructions=instructions,
+        )
+    )
+
+
+def build_reactor_agent(persona: JurorPersona, model: str = "gpt-5.2") -> AgentHandle:
+    """Build a reactor agent to like/dislike other turns."""
+    instructions = f"""You are {persona.name} listening to a debate.
+
+YOUR STYLE: {persona.description}
+
+TASK: React to the latest statement from another juror.
+- Agree (Thumbs Up) if it aligns with your view or perspective.
+- Disagree (Thumbs Down) if it contradicts your view or seems flawed.
+
+OUTPUT:
+- reaction: "👍" or "👎"
+- reason: A very short (1 sentence) explanation of why.
+"""
+    
+    return build_agent(
+        AgentDefinition(
+            name=f"reactor_{persona.id}",
+            model=model,
+            output_type=JurorReaction,
             instructions=instructions,
         )
     )
@@ -177,9 +204,15 @@ def build_hackathon_registry(
         persona.id: build_juror_agent(persona, model)
         for persona in personas
     }
+
+    reactors = {
+        persona.id: build_reactor_agent(persona, model)
+        for persona in personas
+    }
     
     return HackathonAgentRegistry(
         jurors=jurors,
+        reactors=reactors,
         moderator=build_moderator_agent(model),
         final_judge=build_final_judge_agent(model),
     )

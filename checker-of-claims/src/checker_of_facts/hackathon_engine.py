@@ -22,6 +22,7 @@ from checker_of_facts.hackathon_models import (
     DebateRound,
     DebateResult,
     DebateTurn,
+    JurorReaction,
     ModeratorFinalVerdict,
     ModeratorSummary,
     JurorPersona,
@@ -37,6 +38,9 @@ try:
 except Exception:  # pragma: no cover - soft dependency
     Agent = None
     Runner = None
+
+from dataclasses import replace
+
 
 
 # ANSI color codes for terminal output
@@ -105,6 +109,9 @@ def print_debate_turn(turn: DebateTurn) -> None:
     print(f"{color}{Colors.BOLD}🎭 {turn.juror_name} ({turn.persona}){Colors.END}")
     print(f"{color}   Round {turn.round_number}, Turn {turn.turn_index}{Colors.END}")
     print(f"   {turn.content}")
+    
+    if turn.reactions:
+        print(f"   {Colors.YELLOW}Reactions: {[r.reaction for r in turn.reactions]}{Colors.END}")
     print()
 
 
@@ -234,6 +241,11 @@ class HackathonDebateEngine:
                 turn_index=turn_idx,
                 prior_turns=round1_turns,
             )
+            
+            # Get reactions from other jurors
+            reactions = await self._get_reactions(turn, juror_ids)
+            turn = replace(turn, reactions=reactions)
+            
             round1_turns.append(turn)
             
             if self.verbose:
@@ -276,6 +288,11 @@ class HackathonDebateEngine:
                 prior_turns=all_prior_turns + round2_turns,
                 moderator_summary=moderator_summary,
             )
+            
+            # Get reactions from other jurors
+            reactions = await self._get_reactions(turn, juror_ids)
+            turn = replace(turn, reactions=reactions)
+            
             round2_turns.append(turn)
             
             if self.verbose:
@@ -432,3 +449,60 @@ class HackathonDebateEngine:
                 key_arguments_for_mutated=[],
                 final_reasoning="Unable to parse verdict.",
             )
+
+    async def _get_reactions(
+        self,
+        turn: DebateTurn,
+        all_jurors: list[str],
+    ) -> list[JurorReaction]:
+        """Get reactions from other jurors for a turn."""
+        reactions = []
+        other_jurors = [jid for jid in all_jurors if jid != turn.juror_id]
+        
+        # Parallel execution using asyncio.gather
+        tasks = []
+        for reactor_id in other_jurors:
+            tasks.append(self._run_single_reaction(reactor_id, turn))
+        
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        
+        for res in results:
+            if isinstance(res, JurorReaction):
+                reactions.append(res)
+            # Ignore errors to keep debate moving
+            elif self.verbose and isinstance(res, Exception):
+                print(f"Reaction failed: {res}")
+                
+        return reactions
+
+    async def _run_single_reaction(self, reactor_id: str, turn: DebateTurn) -> JurorReaction:
+        # Check if we have reactors, otherwise skip (backward compatibility)
+        if not hasattr(self.registry, 'reactors') or reactor_id not in self.registry.reactors:
+            return None
+            
+        agent = self.registry.reactors[reactor_id]
+        persona = next(p for p in self.personas if p.id == reactor_id)
+        
+        input_data = {
+            "speaker_name": turn.juror_name,
+            "speaker_persona": turn.persona,
+            "content": turn.content,
+        }
+        
+        result = await self.runner.run(
+            agent,
+            json.dumps(input_data),
+            max_turns=1,
+        )
+        
+        output = result.final_output
+        if isinstance(output, JurorReaction):
+            return output
+        
+        # Fallback
+        return JurorReaction(
+             juror_id=reactor_id,
+             juror_name=persona.name,
+             reaction="👍" if "agree" in str(output).lower() else "👎",
+             reason=str(output)[:50]
+        )

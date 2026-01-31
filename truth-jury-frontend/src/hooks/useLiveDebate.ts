@@ -110,6 +110,27 @@ export function useLiveDebate(options: UseLiveDebateOptions = {}): UseLiveDebate
 
             // Small delay between messages
             await new Promise(resolve => setTimeout(resolve, MESSAGE_DISPLAY_DELAY_MS));
+        } else if (event.event_type === 'reactions' && event.reactions) {
+            setMessages(prev => {
+                const newMessages = [...prev];
+                // Find message by round/turn match
+                const searchStr = `msg-turn-${event.round_number}-${event.turn_index}-`;
+                const targetIndex = newMessages.findIndex(m => m.id.startsWith(searchStr));
+
+                if (targetIndex !== -1) {
+                    const targetMessage = newMessages[targetIndex];
+                    const newReactions: Reaction[] = event.reactions!.map((r: any) => ({
+                        personaId: r.jurorId as PersonaType,
+                        type: (r.reaction === '👍' || r.reaction.toLowerCase().includes('thumbs up')) ? 'thumbsUp' : 'thumbsDown'
+                    }));
+
+                    newMessages[targetIndex] = {
+                        ...targetMessage,
+                        reactions: newReactions
+                    };
+                }
+                return newMessages;
+            });
         } else if (event.event_type === 'verdict' && event.verdict) {
             const frontendVerdict = convertApiVerdictToFrontend(event.verdict);
             setVerdict(frontendVerdict);

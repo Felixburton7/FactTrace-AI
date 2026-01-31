@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { ThumbsUp, ThumbsDown } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import { Message, Reaction } from '@/types/debate';
 import { Persona } from '@/types/debate';
 import { PersonaAvatar } from './PersonaAvatar';
@@ -23,10 +24,10 @@ export function ChatMessage({ message, persona, index, onPersonaClick }: ChatMes
   // Moderator on the right, jury on the left
   const isRightAligned = persona.id === 'moderator';
   const isJury = persona.id !== 'moderator';
-  
+
   // Jury gets neutral bubble, moderator gets yellow
-  const bubbleClass = isJury 
-    ? 'bg-white/5 border-white/10' 
+  const bubbleClass = isJury
+    ? 'bg-white/5 border-white/10'
     : 'bg-moderator/10 border-moderator/20';
   const nameClass = `text-${persona.color}`;
 
@@ -80,9 +81,17 @@ export function ChatMessage({ message, persona, index, onPersonaClick }: ChatMes
           bubbleClass,
           isRightAligned ? 'rounded-tr-sm' : 'rounded-tl-sm'
         )}>
-          <p className="text-sm text-foreground/90 leading-relaxed">
-            {message.content}
-          </p>
+          <div className="text-sm text-foreground/90 leading-relaxed prose prose-invert prose-sm max-w-none">
+            <ReactMarkdown
+              components={{
+                p: ({ children }) => <span>{children}</span>,
+                strong: ({ children }) => <strong className="font-bold text-foreground">{children}</strong>,
+                em: ({ children }) => <em className="italic">{children}</em>,
+              }}
+            >
+              {message.content}
+            </ReactMarkdown>
+          </div>
         </div>
 
         {/* Reactions - attached to bubble bottom (WhatsApp style) */}

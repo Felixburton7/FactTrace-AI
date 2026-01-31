@@ -16,7 +16,7 @@ export interface StartDebateRequest {
 }
 
 export interface DebateEvent {
-    event_type: 'intro' | 'turn' | 'summary' | 'verdict' | 'error' | 'complete';
+    event_type: 'intro' | 'turn' | 'summary' | 'verdict' | 'error' | 'complete' | 'reactions';
     persona_id: string | null;
     persona_name: string | null;
     content: string;
@@ -24,6 +24,12 @@ export interface DebateEvent {
     turn_index: number | null;
     is_moderator_summary: boolean;
     verdict?: JudgeVerdictFromAPI;
+    reactions?: {
+        jurorId: string;
+        jurorName: string;
+        reaction: string;
+        reason?: string;
+    }[];
     timestamp: string;
 }
 

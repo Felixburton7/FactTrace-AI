@@ -42,6 +42,16 @@ class DebateTurn:
     turn_index: int  # Position within the round
     content: str
     timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    reactions: list[JurorReaction] = field(default_factory=list)
+
+
+@dataclass(frozen=True)
+class JurorReaction:
+    """A reaction from a juror to another juror's turn."""
+    juror_id: str
+    juror_name: str
+    reaction: Literal["👍", "👎"]
+    reason: str | None = None
 
 
 @dataclass(frozen=True)
