@@ -80,7 +80,7 @@ Examples:
     model_group.add_argument(
         "--model",
         type=str,
-        default="gpt-4.1-mini",
+        default="gpt-5.2",
         help="OpenAI model to use (default: gpt-4.1-mini)",
     )
     model_group.add_argument(
