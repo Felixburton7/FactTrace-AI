@@ -1,33 +1,42 @@
 # FactTrace: The Agentic Consensus Jury ⚖️
 
-> **🏆 3rd Place Winner** at the Cambridge DIS Hackathon (Team Polaris)  
-> *Developed by Felix Burton, Dhruv Gupta, and Uras Asil*
+> **Truth You Can Verify. AI You Can Trust.**
+
+<div align="center">
+
+[![Python](https://img.shields.io/badge/Python-3.12+-blue?logo=python&logoColor=white)](https://www.python.org/)
+[![OpenAI](https://img.shields.io/badge/AI-OpenAI_GPT--4o-green?logo=openai&logoColor=white)](https://openai.com/)
+[![ElevenLabs](https://img.shields.io/badge/Voice-ElevenLabs-orange)](https://elevenlabs.io/)
+[![Orchestration](https://img.shields.io/badge/Orchestration-Custom_Agent_Framework-red)](https://github.com/FactTrace-Ltd/checker-of-claims)
+
+**🏆 3rd Place Winner** at the [Cambridge DIS Hackathon](https://github.com/FactTrace-Ltd/cambridge-dis-hackathon) (Team Polaris)  
+*Developed by Felix Burton, Dhruv Gupta, and Uras Asil*
+
+[**Visit FactTrace Website**](https://www.facttrace.ai/about)
+
+</div>
 
 ---
 
-## 📖 Overview
+## 🚩 The Challenge: "Faithful or Mutated?"
 
-**FactTrace** is a sophisticated multi-agent system designed to solve the "Faithful or Mutated?" challenge. Instead of a single "black box" AI determining truth, we built a **living, breathing jury of AI agents** with distinct personalities, biases, and roles. 
+**Context:** This project was built for the [Cambridge DIS Hackathon](https://github.com/FactTrace-Ltd/cambridge-dis-hackathon), tackling the **Agentic Consensus Challenge**.
 
-These agents debate, argue, and negotiate to determine if an external claim (e.g., a tweet) faithfully represents an internal ground truth (e.g., a report) or if it has been "mutated" through distortion, exaggeration, or missing context.
+We were tasked with solving a critical problem in the age of AI misinformation: **determining if an external claim is a faithful representation of an internal ground truth.**
 
----
+> *Is the headline sensationalized? Did the tweet strip away vital nuance? Is the summary actually accurate?*
 
-## 🚀 The Challenge: "Faithful or Mutated?"
-
-**The Consensus Challenge:** We were given pairs of statements—an **Internal Fact** (source truth) and an **External Claim** (derived statement). 
-
-The goal wasn't just to check if the claim was "technically true," but to detect subtle shifts in meaning. Is the headline sensationalized? Did the tweet strip away vital nuance? 
-
-A single LLM calling "True" or "False" is opaque. To solve this, we needed a system that could **explain its reasoning** through dialectic debate.
+A single "black box" LLM simply saying "True" or "False" is insufficient and opaque. The challenge was to build a system that could not only detect these mutations (distortions, exaggerations, missing context) but **explain its reasoning** through a transparent, agentic process.
 
 ---
 
-## 💡 The Solution: An Agentic Jury
+## � The Solution: An Agentic Jury
 
-We engineered a **Multi-Agent Jury Debate System** where 5 unique AI agents (Jurors) review the evidence, debate amongst themselves, and reach a verdict.
+**FactTrace** answers this challenge by deploying a **Multi-Agent Jury Debate System**.
 
-### 🧠 The Agents Breakdown
+Instead of a single AI deciding the truth, we engineered a **living, breathing jury of 5 unique AI agents**—each with a distinct persona, bias, and role—to debate the evidence, cross-examine claims, and reach a consensus.
+
+### 🧠 The Jury of Agents
 
 We utilized a modular agentic architecture to create a diverse ecosystem of reasoning:
 
@@ -48,7 +57,9 @@ Our system goes beyond simple prompting. We implemented a complex orchestration 
 *   **Moderator & Judge Separation:** To ensure fairness, we separated the **Moderator** (who guides the conversation) from the **Final Judge** (who delivers the verdict), preventing bias accumulation.
 *   **Voice Integration (ElevenLabs):** We integrated **ElevenLabs** to give each juror a distinct, realistic voice, turning the text-based terminal output into a live, audible courtroom drama.
 
-### ⚡ System Architecture
+---
+
+## ⚡ System Architecture
 
 ```mermaid
 graph TD
@@ -93,16 +104,6 @@ We designed the system to be visually and audibly impressive. Below are snapshot
   <img src="images/image%20copy%202.png" width="45%" alt="Terminal Interface" />
   <img src="images/image%20copy%203.png" width="45%" alt="Verdict Screen" />
 </div>
-
----
-
-## 🛠️ Tech Stack
-
-*   **Core Logic:** Python 3.12+
-*   **AI Engine:** OpenAI GPT-4o (Premium Demo) / GPT-4o-mini (Dev)
-*   **Orchestration:** Custom `checker_of_facts` Agent Framework
-*   **Voice Synthesis:** ElevenLabs API
-*   **Interface:** Rich Terminal UI with Color-Coded Personas
 
 ---
 
