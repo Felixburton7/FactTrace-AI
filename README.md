@@ -52,28 +52,27 @@ Our system goes beyond simple prompting. We implemented a complex orchestration 
 
 ```mermaid
 graph TD
-    Data[Data Input (Claim vs Truth)] --> Moderator
-    Moderator --> Round1[Round 1: Initial Arguments]
+    Data["Data Input (Claim vs Truth)"] --> Moderator
+    Moderator --> Round1["Round 1: Initial Arguments"]
     
     subgraph Jury Room
         Round1 --> Agent1[The Skeptic]
         Round1 --> Agent2[The Pedantic]
         Round1 --> Agent3[Common Sense]
-        Round1 --> Agent4[Devil's Advocate]
+        Round1 --> Agent4["Devil's Advocate"]
         Round1 --> Agent5[Context Expert]
         
-        Agent1 -.-> Reactors[Reactor Agents 👍/👎]
+        Agent1 -.-> Reactors["Reactor Agents 👍/👎"]
         Agent2 -.-> Reactors
         
         Reactors --> Summary[Moderator Summary]
-        Summary --> Round2[Round 2: Rebuttal & Refinement]
+        Summary --> Round2["Round 2: Rebuttal & Refinement"]
         Round2 --> Agent1
         Round2 --> Agent2
-        Round2 --> ...
     end
     
-    ... --> FinalJudge[Final Judge Agent]
-    FinalJudge --> Verdict{Final Verdict: Faithful or Mutated?}
+    Round2 --> FinalJudge[Final Judge Agent]
+    FinalJudge --> Verdict{"Final Verdict: Faithful or Mutated?"}
     FinalJudge --> Report[Detailed Confidence & Reasoning]
 ```
 
