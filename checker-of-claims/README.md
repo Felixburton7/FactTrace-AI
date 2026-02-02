@@ -19,7 +19,7 @@ We were tasked with a subtle problem: given an **Internal Fact** (source truth) 
 We chose a **multi-agent approach** because truth is often a matter of perspective. A single prompt can be biased; a debate reveals the edges of the truth.
 
 ### 1. The Cast of Characters (Design Choice: Cognitive Diversity)
-We didn't just clone `gpt-4`. We engineered **5 distinct personas** to view the problem from different angles. This prevents "groupthink" and ensures every part of the claim is stress-tested.
+We engineered **5 distinct personas** using the OpenAI Agents SDK. This prevents "groupthink" and ensures every part of the claim is stress-tested.
 
 | Juror | Role | Why we chose this |
 |-------|------|-------------------|
@@ -30,7 +30,7 @@ We didn't just clone `gpt-4`. We engineered **5 distinct personas** to view the 
 | **🌐 Context Expert** | Big Picture | Checks if missing context changes the meaning. |
 
 ### 2. The Debate Architecture (Design Choice: Dynamic Consensus)
-We rejected a simple "voting" system. We built a **deliberative process**:
+We built a custom orchestration engine (`HackathonDebateEngine`) that manages the flow:
 
 *   **Round 1 (Discovery):** Jurors speak in a **random order**. This prevents the "First Speaker Bias" (where everyone just agrees with the first agent).
 *   **The Moderator's Interlude:** A separate neutral agent summarizes the points of friction. This "resets" the room and focuses the debate on what actually matters.
@@ -45,60 +45,73 @@ The final output isn't just a label. A specialized **Final Judge Agent** (separa
 
 ---
 
-## 🛠️ How It Works
+## 🏗️ Technical Implementation
 
-The system is built on the **OpenAI Agents SDK** (lightweight wrapper).
+Our solution is built using the **OpenAI Agents SDK (`openai-agents`)** for structured agent definition and orchestration.
 
-### Directory Structure
-*   `src/checker_of_facts/hackathon_agents.py`: Defines the personas, prompt engineering, and distinct roles.
-*   `src/checker_of_facts/hackathon_engine.py`: The "game engine" that orchestrates rounds, shuffling, and reactions.
-*   `src/checker_of_facts/hackathon_cli.py`: The command-line interface for running the system.
+### The Stack
+*   **OpenAI Agents SDK:** Used to define the agents (`Agent`) and execute their turns (`Runner`). We rely on the SDK's ability to enforce structured outputs (using Pydantic models) so every juror turn and verdict is machine-parseable.
+*   **Python 3.10+:** Core language.
+*   **Pydantic:** Used to strictly define the shape of the debate (turns, verdicts, summaries).
 
-### The Flow
-```mermaid
-graph TD
-    A[Input: Claim + Fact] --> B[Round 1: 5 Jurors Speak (Random Order)]
-    B --> C[Moderator Summarizes Agreement/Disagreement]
-    C --> D[Round 2: 5 Jurors Debate & Refine (Random Order)]
-    D --> E[Final Judge Reviews Transcript]
-    E --> F[Output: Verdict + Explanation]
-```
+### Key Components
+1.  **`hackathon_agents.py`**:
+    *   **Registry Pattern**: We use a `HackathonAgentRegistry` to initialize our 5 jurors + moderator + judge.
+    *   **Prompt Engineering**: specific system instructions for each persona (e.g., "You are The Pedant... focus on exact numbers").
+2.  **`hackathon_engine.py`**:
+    *   **Orchestration Loop**: This is the "brain". It doesn't just let agents chat randomly. It enforces the 2-round structure.
+    *   **State Management**: It passes the full transcript (history of turns) to the next speaker so they have context.
+    *   **Async/Parallel Execution**: Reactions are fetched in parallel (`asyncio.gather`) to keep the debate fast.
+3.  **Structured Outputs**:
+    *   We don't parse strings. The `Final Judge` returns a `ModeratorFinalVerdict` object, guaranteeing we always get a valid JSON result with confidence scores and bullet points.
 
 ---
 
-## 🚀 Running the System
+## 🚀 Setup & Usage
 
-### Prerequisites
-*   Python 3.10+
-*   OpenAI API Key (exported as `OPENAI_API_KEY`)
+### 1. Prerequisites
+*   Python 3.11 or higher
+*   An OpenAI API Key (needs access to `gpt-4o` or `gpt-4.1-mini`)
 
-### Installation
+### 2. Installation
 ```bash
+# Clone the repo (if you haven't already)
+# cd facttrace/checker-of-claims
+
+# Create a virtual environment
 python -m venv .venv
 source .venv/bin/activate
+
+# Install dependencies
 pip install -e .
 ```
 
-### Usage
+### 3. Configuration
+Set your API key. You can do this in your terminal or create a `.env` file.
+```bash
+export OPENAI_API_KEY="sk-..."
+```
 
-**1. Run a Single Debate**
-Test a specific claim/truth pair to see the agents in action.
+### 4. Running the Debate
+We provide a simple CLI to interact with the system.
+
+**A. Single Pair Test (Good for debugging)**
 ```bash
 python -m checker_of_facts.hackathon_cli \
     --claim "Germany had less than 13,200 cases..." \
     --truth "As of 19 March 2020, Germany has reported 13,083 cases..."
 ```
 
-**2. Run the Hackathon Dataset (Polaris.csv)**
-Run the jury on the provided dataset. Good for bulk evaluation.
+**B. Bulk Run (The Polaris Dataset)**
+Run on the provided hackathon CSV file.
 ```bash
 python -m checker_of_facts.hackathon_cli \
     --csv ../cambridge-dis-hackathon/Polaris.csv \
     --count 5
 ```
 
-**3. Demo Mode (High Quality)**
-For the final presentation, use the premium model (`gpt-4o`) for better reasoning.
+**C. Demo Mode (Premium)**
+For the final presentation, use the `--premium` flag to switch all agents to `gpt-4o` (slower but deeper reasoning).
 ```bash
 python -m checker_of_facts.hackathon_cli \
     --csv ../cambridge-dis-hackathon/Polaris.csv \
