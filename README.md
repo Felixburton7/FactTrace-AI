@@ -12,7 +12,6 @@
 **🏆 3rd Place Winner** at the [Cambridge DIS Hackathon](https://github.com/FactTrace-Ltd/cambridge-dis-hackathon) (Team Polaris)  
 *Developed by Felix Burton, Dhruv Gupta, and Uras Asil*
 
-[**Visit FactTrace Website**](https://www.facttrace.ai/about)
 
 </div>
 
