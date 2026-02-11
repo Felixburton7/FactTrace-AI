@@ -18,7 +18,7 @@
 ---
 
 ## 🚩 The Challenge: "Faithful or Mutated?"
-
+ 
 **Context:** This project was built for the [Cambridge DIS Hackathon](https://github.com/FactTrace-Ltd/cambridge-dis-hackathon), tackling the **Agentic Consensus Challenge**.
 
 We were tasked with solving a critical problem in the age of AI misinformation: **determining if an external claim is a faithful representation of an internal ground truth.**
